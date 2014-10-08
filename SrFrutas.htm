@@ -1,0 +1,796 @@
+<html>
+	<body onload = "loop()">
+		<center><canvas id = "tela" width = "1024" height = "768" style = "border: 1px solid"></canvas></center>
+			<script>
+			// Desenha Canvas
+			var canvas = document.getElementById("tela");
+			var ctx = canvas.getContext("2d");
+			
+			var desclick = true;
+			var click;
+			var xMouse;
+			var yMouse;
+			var CenaMenu = true;
+			var CenaJogo = false;
+			var CenaInstrucao = false;
+			var CenaCreditos = false;
+			var CenaSair = false;
+			var posFruitX = 0;
+			var posFruitY = 0;
+			var contClick = 0;
+			var fruits = new Array();
+			var random = new Array("Jogo/frutaAbacate.png", "Jogo/frutaCaju.png", "Jogo/frutaLoca.png", "Jogo/frutaPera.png", "Jogo/frutaRoma.png");
+			var nivel = 1;
+			
+			var fruitAlpha;
+			
+			var id = new Array();
+			var idFrutas = new Array();
+			
+			var fString = "algo"; iString = "algo2";
+			
+			var remove = false;
+			
+			var start, cria;
+			
+			var nErros = 0;
+			
+			var animaString = "AnimacaoInicio000";
+			var animaCont = 1;
+			var cenaAnimacao = false;
+			var contDebug = true;
+			
+			var animaPString = "AnimacaoPerdeu000";
+			var animaPCont = 1;
+			var cenaPerdeu = false;
+			var contPDebug = true;
+			
+			//var animaDebug = true;
+			
+			
+			var Imagem = function(src, x, y, width, height, globalAlpha)
+			{
+				this.x = x;
+				this.y = y;
+				this.width = width;
+				this.height = height;
+				this.defaultX = x;
+				this.defaultY = y;
+				this.image = document.createElement("img");
+				this.image.src = src;
+				this.src = src;
+				this.globalAlpha = 1;
+				this.draw = function(c)
+				{
+					c.save();
+					c.globalAlpha = this.globalAlpha;
+					c.beginPath();
+					c.drawImage(this.image, this.x, this.y, this.width, this.height);
+					c.closePath();
+					c.restore();
+				}
+			}
+			
+			var Fade = new Imagem("Menu/Fade.png", 0, 0, 1024, 768);
+			
+			var Errao = new Imagem("Jogo/Derrota/Errao.png", 310, 150, 383, 510);
+			
+			var Menu = new Imagem("Menu/Menu.jpg", 0, 0, 1024, 768);
+			var Instrucoes = new Imagem("Menu/placaInstrucoes.jpg", 0, 0, 1024, 768);
+			var Creditos = new Imagem("Menu/PlacaCreditos.jpg", 0, 0, 1024, 768);
+			
+			var BtJogar2 = new Imagem("Menu/BtJogar2.png", 285, 270, 125, 53);
+			
+			var BtJogar = new Imagem("Menu/BtJogar.png", 140, 605, 125, 53);
+			var BtInstrucoes = new Imagem("Menu/BtInstrucoes.png", 315, 605, 232, 53);
+			var BtCreditos = new Imagem("Menu/BtCreditos.png", 590, 605, 183, 53);
+			var BtSair = new Imagem("Menu/BtSair.png", 820, 605, 88, 53);
+			var BtVoltar = new Imagem("Menu/BtVoltar.png", 20, 690, 156, 66);
+			
+			var Background = new Imagem("Jogo/Tela.jpg", 0, 0, 1024, 768);
+			
+			var cestaAbacate = new Imagem("Jogo/Caixa.png", 70, 550, 204, 94);
+			var cestaRoma = new Imagem("Jogo/Caixa.png", 410, 550, 204, 94);
+			var cestaCaju = new Imagem("Jogo/Caixa.png", 750, 550, 204, 94);
+			var cestaPera = new Imagem("Jogo/Caixa.png", 240, 650, 204, 94);
+			var cestaLoca = new Imagem("Jogo/Caixa.png", 595, 650, 204, 94);
+			
+			var Abacates = new Imagem("Jogo/vAbacates.png", 75, 450, 189, 183);
+			var Romas = new Imagem("Jogo/vRomas.png", 420, 495, 186, 141);
+			var Cajus = new Imagem("Jogo/vCajus.png", 760, 470, 183, 159);
+			var Peras = new Imagem("Jogo/vPeras.png", 250, 555, 180, 180);
+			var Locas = new Imagem("Jogo/vLocas.png", 605, 574, 181, 165);
+			
+			var Cliente = new Imagem("Jogo/Personagem.png", 550, 120, 401, 475);
+			var Balao = new Imagem("Jogo/Balao.png", 210, 100, 503, 267);
+			
+			
+			Balao.globalAlpha = 0;
+			
+			// Array das fruits e Ids das fruits
+			fruits[0] = new Imagem(random[Math.floor(Math.random()*5)], 250, 140, 63, 98);
+			fruits[1] = new Imagem(random[Math.floor(Math.random()*5)], 340, 140, 63, 98);
+			fruits[2] = new Imagem(random[Math.floor(Math.random()*5)], 430, 140, 63, 98);
+			fruits[3] = new Imagem(random[Math.floor(Math.random()*5)], 520, 140, 63, 98);
+			fruits[4] = new Imagem(random[Math.floor(Math.random()*5)], 250, 245, 63, 98);
+			fruits[5] = new Imagem(random[Math.floor(Math.random()*5)], 340, 245, 63, 98);
+			fruits[6] = new Imagem(random[Math.floor(Math.random()*5)], 430, 245, 63, 98);
+			fruits[7] = new Imagem(random[Math.floor(Math.random()*5)], 520, 245, 63, 98);
+			
+			function sizeDebug()
+			{
+				for(i = 0; i < 8; i++)
+				{
+					if(fruits[i].src == "Jogo/frutaAbacate.png")
+					{
+						fruits[i].width = 85;
+						fruits[i].height = 75;
+					}
+								
+					if(fruits[i].src == "Jogo/frutaRoma.png")
+					{
+						fruits[i].width = 81;
+						fruits[i].height = 91;
+					}
+				}
+			}
+			
+			function mouseDown(e)
+			{
+				if(e.button == 0)
+				{
+					click = true;
+					contClick = 1;
+					desclick = false;
+				}
+			}
+			
+			function mouseUp(e)
+			{
+				if(e.button == 0)
+				{
+					
+					click = false;
+					desclick = true;
+					contClick = 0;
+				}		
+			}
+			
+			function mouseMove(e)
+			{
+				xMouse = e.x - canvas.offsetLeft;
+				yMouse = e.y - canvas.offsetTop;
+			}
+			
+			function animaLoad()
+			{
+				if(contDebug)
+				{
+					animaCont++;
+					
+					if(animaCont > 9)
+					{
+						animaString = "AnimacaoInicio00";
+					}
+				
+					if(animaCont > 99)
+					{
+						animaString = "AnimacaoInicio0";
+					}
+					
+					if(animaCont > 155)
+					{
+						animaString = "AnimacaoInicio000";
+						animaCont = 1;
+						contDebug = false;
+					}
+				}
+				
+				anima = new Imagem("Animacao/AnimaInicio/"+animaString+animaCont.toString()+".jpg", 0, 0, 1024, 768);
+				
+				if(contPDebug)
+				{
+					animaPCont++;
+					
+					if(animaPCont > 9 && animaPCont < 100)
+					{
+						animaPString = "AnimacaoPerdeu00";
+					}
+					
+					if(animaPCont > 99 && animaPCont < 215)
+					{
+						animaPString = "AnimacaoPerdeu0";
+					}
+					
+					if(animaPCont >= 215)
+					{
+						animaPString = "AnimacaoPerdeu000";
+						animaPCont = 1;
+						contPDebug = false;
+					}
+				}
+				
+				animaP = new Imagem("Animacao/AnimaPerdeu/"+animaPString+animaPCont.toString()+".jpg", 0, 0, 1024, 768);
+			}
+			
+			function Animacao()
+			{
+				animaString = "AnimacaoInicio000";
+				animaCont += 1;
+			
+				if(animaCont > 9)
+				{
+					animaString = "AnimacaoInicio00";
+				}
+				
+				if(animaCont > 99)
+				{
+					animaString = "AnimacaoInicio0";
+				}
+				
+				if(animaCont >= 155)
+				{
+					animaCont = 155;
+					
+					var botaoAnima = true;
+				}
+				
+				anima = new Imagem("Animacao/AnimaInicio/"+animaString+animaCont.toString()+".jpg", 0, 0, 1024, 768);
+				anima.draw(ctx);
+				
+				if(botaoAnima)
+				{
+					BtJogar2.draw(ctx);
+				}
+			}
+				
+			function AnimacaoD()
+			{
+				animaPString = "AnimacaoPerdeu000";
+				animaPCont++;
+				
+				if(animaPCont > 9)
+					{
+						animaPString = "AnimacaoPerdeu00";
+					}
+					
+					if(animaPCont > 99)
+					{
+						animaPString = "AnimacaoPerdeu0";
+					}
+					
+					if(animaPCont >= 215)
+					{
+						animaPCont = 215;
+					}
+					
+					animaP = new Imagem("Animacao/AnimaPerdeu/"+animaPString+animaPCont.toString()+".jpg", 0, 0, 1024, 768);
+					animaP.draw(ctx);
+			}
+			
+			function fadeIn()
+			{
+				//Fade.globalAlpha = 1;
+				
+				if(Fade.globalAlpha >= 0.1)
+				{
+					Fade.draw(ctx);
+					Fade.globalAlpha -= 0.005;
+				}
+			}
+			
+			function manterImagem()
+			{
+				BtJogar.x = 140;
+				BtJogar.y = 605;
+				BtJogar.width = 125;
+				BtJogar.height = 53;
+				
+				BtJogar2.x = 285;
+				BtJogar2.y = 270;
+				BtJogar2.width = 125;
+				BtJogar2.height = 53;
+				
+				BtInstrucoes.x = 315;
+				BtInstrucoes.y = 605;
+				BtInstrucoes.width = 232;
+				BtInstrucoes.height = 53;
+			
+				BtCreditos.x = 590;
+				BtCreditos.y = 605;
+				BtCreditos.width = 183;
+				BtCreditos.height = 53;
+				
+				BtSair.x = 820;
+				BtSair.y = 605;
+				BtSair.width = 88;
+				BtSair.height = 53;
+				
+				BtVoltar.x = 20;
+				BtVoltar.y = 690;
+				BtVoltar.width = 156;
+				BtVoltar.height = 66;
+			}
+			
+			function mouseDebug()
+			{
+				if(contClick == 1)
+				{
+					click = false;
+				}
+			}
+			
+			function mouse()
+			{
+				manterImagem();
+				
+				if(CenaMenu)
+				{
+				
+				if(BtJogar.x + BtJogar.width > xMouse && BtJogar.x < xMouse &&
+					BtJogar.y + BtJogar.height > yMouse && BtJogar.y < yMouse)
+					{
+						BtJogar.width = 163;
+						BtJogar.height = 84;
+						BtJogar.x = 125;
+						BtJogar.y = 588;
+						
+						if(click){
+							CenaMenu = false;
+							cenaAnimacao = true;
+						}
+					}
+					
+				if(BtInstrucoes.x + BtInstrucoes.width > xMouse && BtInstrucoes.x < xMouse &&
+					BtInstrucoes.y + BtInstrucoes.height > yMouse && BtInstrucoes.y < yMouse)
+					{
+						
+						BtInstrucoes.x = 280;
+						BtInstrucoes.y = 595;
+						BtInstrucoes.width = 302;
+						BtInstrucoes.height = 69;
+			
+						
+						if(click){
+							CenaMenu = false;
+							CenaInstrucao = true;
+						}
+					}		
+				
+				if(BtCreditos.x + BtCreditos.width > xMouse && BtCreditos.x < xMouse &&
+					BtCreditos.y + BtCreditos.height > yMouse && BtCreditos.y < yMouse)
+					{
+						BtCreditos.x = 565;
+						BtCreditos.y = 597;
+						BtCreditos.width = 240;
+						BtCreditos.height = 69;
+						
+						if(click){
+							CenaMenu = false;
+							CenaCreditos = true;
+						}
+					}
+				
+				if(BtSair.x + BtSair.width > xMouse && BtSair.x < xMouse &&
+					BtSair.y + BtSair.height > yMouse && BtSair.y < yMouse)
+					{
+						BtSair.x = 800;
+						BtSair.y = 595;
+						BtSair.width = 115;
+						BtSair.height = 69;
+					
+						if(click){
+							window.close();
+							}
+					}
+				}
+				
+				if(cenaAnimacao)
+				{
+					if(BtJogar2.x + BtJogar2.width > xMouse && BtJogar2.x < xMouse &&
+					BtJogar2.y + BtJogar2.height > yMouse && BtJogar2.y < yMouse)
+					{
+						BtJogar2.width = 163;
+						BtJogar2.height = 84;
+						BtJogar2.x = 270;
+						BtJogar2.y = 255;
+					
+						if(click){
+							cenaAnimacao = false;
+							CenaJogo = true;
+						}
+					}
+				}
+				
+				if(CenaInstrucao)
+				{
+				if(BtVoltar.x + BtVoltar.width > xMouse && BtVoltar.x < xMouse &&
+					BtVoltar.y + BtVoltar.height > yMouse && BtVoltar.y < yMouse)
+					{
+						BtVoltar.x = 15;
+						BtVoltar.y = 680;
+						BtVoltar.width = 203;
+						BtVoltar.height = 86;
+						
+						if(click)
+						{
+							CenaMenu = true;
+							CenaInstrucao = false;
+						}
+					}
+				}
+					
+				if(CenaCreditos)
+				{
+					if(BtVoltar.x + BtVoltar.width > xMouse && BtVoltar.x < xMouse &&
+						BtVoltar.y + BtVoltar.height > yMouse && BtVoltar.y < yMouse)
+					{
+						BtVoltar.x = 15;
+						BtVoltar.y = 680;
+						BtVoltar.width = 203;
+						BtVoltar.height = 86;
+					
+						if(click)
+						{
+							CenaMenu = true;
+							CenaCreditos = false;
+						}
+					}
+					
+				}
+				
+				
+				
+				if(CenaJogo){
+					if(cestaAbacate.x + cestaAbacate.width > xMouse && cestaAbacate.x < xMouse &&
+					cestaAbacate.y + cestaAbacate.height > yMouse && cestaAbacate.y < yMouse)
+					{
+						Abacates.globalAlpha = 0.8;
+						
+						if(click && start){
+							id.push("Jogo/frutaAbacate.png");
+							}
+					}
+					
+					else
+					{
+						Abacates.globalAlpha = 1;
+					}
+					
+					
+					if(cestaRoma.x + cestaRoma.width > xMouse && cestaRoma.x < xMouse &&
+					cestaRoma.y + cestaRoma.height > yMouse && cestaRoma.y < yMouse)
+					{
+						Romas.globalAlpha = 0.8;
+					
+						if(click && start){
+							id.push("Jogo/frutaRoma.png");
+						}
+						
+					}
+					
+					else
+					{
+						Romas.globalAlpha = 1;
+					}
+					
+					
+					if(cestaCaju.x + cestaCaju.width > xMouse && cestaCaju.x < xMouse &&
+					cestaCaju.y + cestaCaju.height > yMouse && cestaCaju.y < yMouse)
+					{
+						Cajus.globalAlpha = 0.8;
+					
+						if(click && start){
+							id.push("Jogo/frutaCaju.png");
+							}
+					}
+					
+					else
+					{
+						Cajus.globalAlpha = 1;
+					}
+					
+					
+					if(cestaPera.x + cestaPera.width > xMouse && cestaPera.x < xMouse &&
+					cestaPera.y + cestaPera.height > yMouse && cestaPera.y < yMouse)
+					{
+						Peras.globalAlpha = 0.8;
+					
+						if(click && start){
+							id.push("Jogo/frutaPera.png");
+							}
+					}
+					
+					else
+					{
+						Peras.globalAlpha = 1;
+					}
+					
+					
+					if(cestaLoca.x + cestaLoca.width > xMouse && cestaLoca.x < xMouse &&
+					cestaLoca.y + cestaLoca.height > yMouse && cestaLoca.y < yMouse)
+					{
+						Locas.globalAlpha = 0.8;
+					
+						if(click && start){
+							id.push("Jogo/frutaLoca.png");
+							}
+					}
+					
+					else
+					{
+						Locas.globalAlpha = 1;
+					}
+				}	
+			}
+			
+			function drawRect(x , y, w, h, color)
+			{
+				ctx.fillStyle = color;
+				ctx.fillRect(x, y, w, h);
+			}
+			
+			function drawText(x, y, text, color)
+			{
+				ctx.fillStyle = color;
+				ctx.font = "50px Arial";
+				ctx.fillText(text, x, y);
+			}
+			
+			function DrawMenu()
+			{
+				Menu.draw(ctx);
+				BtJogar.draw(ctx);
+				BtInstrucoes.draw(ctx);
+				BtCreditos.draw(ctx);
+				BtSair.draw(ctx);
+			}
+			
+			function DrawInstrucao()
+			{
+				Instrucoes.draw(ctx);
+				BtVoltar.draw(ctx);
+			}
+			
+			function DrawCreditos()
+			{
+				Creditos.draw(ctx);
+				BtVoltar.draw(ctx);
+			}
+			
+			function DrawGame()
+			{
+				Background.draw(ctx);
+				Cliente.draw(ctx);
+				Abacates.draw(ctx);
+				Romas.draw(ctx);
+				cestaAbacate.draw(ctx);
+				cestaRoma.draw(ctx);
+				Peras.draw(ctx);
+				cestaPera.draw(ctx);
+				Cajus.draw(ctx);
+				cestaCaju.draw(ctx);
+				Locas.draw(ctx);
+				cestaLoca.draw(ctx);
+				
+				var Erros = new Imagem("Jogo/Derrota/Erros"+nErros.toString()+".png", 810, 10, 770/4, 344/4);
+				Erros.draw(ctx);
+				
+				Balao.draw(ctx);
+				Errao.draw(ctx);
+				
+				if(Balao.globalAlpha < 1.5)
+				{
+					Balao.globalAlpha += 0.005;
+				}
+				
+				else
+				{
+					start = true;
+				}
+			}
+			
+			Errao.globalAlpha = 0;
+
+			function comparation()
+			{
+				fString = idFrutas.toString();
+				iString = id.toString();
+				
+				if(start && iString == fString)
+				{
+					remove = true;
+					nivel += 1;
+				}
+				
+				if(id.length >= idFrutas.length && iString != fString)
+				{
+					remove = true;
+					nErros += 1;
+					
+					Errao.globalAlpha = 1;
+					setTimeout(function(){Errao.globalAlpha = 0}, 1000);
+				}
+				
+				if(nErros >= 3)
+				{
+					cenaPerdeu = true;
+					CenaJogo = false;
+				}
+				
+				if(remove)
+				{
+					id.pop();
+					
+					if(id.length == 0)
+					{
+						remove = false;
+					}
+				}
+				
+			}
+			
+			var fruitCont = 0;
+			
+			function fruitAlpha()
+			{
+				for(i = 0; i < nivel; i++)
+					fruits[i].globalAlpha = 0;
+			}
+			
+			function setLevel()
+			{
+				if(CenaJogo)
+				{
+					if(nivel == 1)
+					{
+						if(Balao.globalAlpha > 1.5)
+						{
+							for(i = 0; i < nivel; i++){
+									fruits[i].draw(ctx);
+									
+									//setTimeout(fruitAlpha, 3000);
+							}
+							
+							idFrutas = [fruits[0].src];
+						}
+					}
+				
+					if(nivel == 2)
+					{
+						for(i = 0; i < nivel; i++){
+							fruits[i].draw(ctx);
+						}
+						
+						idFrutas = [fruits[0].src, fruits[1].src];
+					}
+				
+					if(nivel == 3)
+					{
+						for(i = 0; i < nivel; i++){
+							fruits[i].draw(ctx);
+						}
+						
+						idFrutas = [fruits[0].src, fruits[1].src, fruits[2].src];
+						
+					}
+				
+					if(nivel == 4)
+					{
+						for(i = 0; i < nivel; i++){
+							fruits[i].draw(ctx);
+						}
+						
+						idFrutas = [fruits[0].src, fruits[1].src, fruits[2].src, fruits[3].src];
+					
+					}
+				
+					if(nivel == 5)
+					{
+						for(i = 0; i < nivel; i++){
+							fruits[i].draw(ctx);
+						}
+						
+						idFrutas = [fruits[0].src, fruits[1].src, fruits[2].src, fruits[3].src, fruits[4].src];
+						
+					}
+				
+				/*		 ___
+					|	|		
+					|___|___	
+						|   |
+					 ___|   |
+								
+				*/
+				 
+					if(nivel == 6)
+					{
+						for(i = 0; i < nivel; i++){
+							fruits[i].draw(ctx);
+						}
+						
+						idFrutas = [fruits[0].src, fruits[1].src, fruits[2].src, fruits[3].src, fruits[4].src, fruits[5].src];
+						
+					}
+				
+				
+					if(nivel == 7)
+					{
+						for(i = 0; i < nivel; i++){
+							fruits[i].draw(ctx);
+						}
+						
+						idFrutas = [fruits[0].src, fruits[1].src, fruits[2].src, fruits[3].src, fruits[4].src, fruits[5].src, fruits[6].src];
+						
+					}
+					
+				
+				
+					if(nivel == 8)
+					{
+						for(i = 0; i < nivel; i++){
+							fruits[i].draw(ctx);
+						}
+						
+						idFrutas = [fruits[0].src, fruits[1].src, fruits[2].src, fruits[3].src, fruits[4].src, fruits[5].src, fruits[6].src, fruits[7].src];
+
+					}
+				}
+			}				
+			
+			document.addEventListener("mousedown", mouseDown, false);
+			document.addEventListener("mouseup", mouseUp, false);
+			document.addEventListener("mousemove", mouseMove, false);
+			
+			function loop()
+			{	
+				animaLoad();
+				
+				if(CenaMenu)
+				{
+					DrawMenu();
+					fadeIn();
+				}
+				
+				if(cenaAnimacao)
+				{
+					Animacao();
+				}
+				
+				if(cenaPerdeu)
+				{
+					AnimacaoD();
+				}
+				
+				if(CenaJogo)
+				{
+					DrawGame();
+					sizeDebug();
+				}
+				
+				if(CenaInstrucao)
+				{
+					DrawInstrucao();
+					//fadeIn();
+				}
+				
+				if(CenaCreditos)
+				{
+					DrawCreditos();
+				}
+				
+				if(start)
+				{
+					comparation();
+				}
+				
+				setLevel();
+				mouse();
+				mouseDebug();
+				setTimeout(loop, 10);
+			}
+				
+		</script>
+	</body>
+</html>
+</html>
